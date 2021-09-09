@@ -1,4 +1,4 @@
-name: 'Deploy to Kubernetes' 
+name: 'MLibrary Deploy to Kubernetes Cluster' 
 description: 'Deploys a ghcr image to a Kubernetes Cluster'
 inputs:
   github_username:
