@@ -1,0 +1,47 @@
+name: 'Deploy to Kubernetes Cluster' 
+description: 'Deploys a ghcr image to a Kubernetes Cluster'
+inputs:
+  github_username:
+    required: true
+  github_token:
+    required: true
+  image:
+    required: true
+    description: organization/image_name
+  cluster_ca:
+    required: true
+  cluster_server:
+    require: true
+  namespace_token:
+    required: true
+  namespace:
+    required: true
+  deployment:
+    required: true
+    default: 'web'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Log into Github Container Registry
+      uses: docker/login-action@v1
+      with:
+        registry: ghcr.io
+        username: ${{ inputs.github_username }}
+        password: ${{ inputs.github_token }}
+    - name: Check that the tag exists
+      run: docker manifest inspect ghcr.io/${{ inputs.image }} > /dev/null
+      shell: bash
+    - uses: azure/setup-kubectl@v1
+    - name: Authenticate with kubernetes
+      shell: bash
+      run: |
+        mkdir -p ${HOME}/.kube/certs/cluster
+        echo ${{ inputs.cluster_ca }} | base64 -d > ${HOME}/.kube/certs/cluster/k8s-ca.crt
+        kubectl config set-cluster cluster --certificate-authority=${HOME}/.kube/certs/cluster/k8s-ca.crt --server=${{ inputs.cluster_server }}
+        kubectl config set-credentials default --token=`echo ${{ inputs.namespace_token }} | base64 -d`
+        kubectl config set-context default --cluster=cluster --user=default --namespace=${{ inputs.namespace }}
+        kubectl config use-context default
+    - name: Deploy
+      shell: bash
+      run: kubectl set image deployment ${{ inputs.deployment }} ${{ inputs.deployment }}=ghcr.io/${{ inputs.image }}
