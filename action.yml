@@ -1,4 +1,4 @@
-name: 'Deploy to Kubernetes Cluster' 
+name: 'Deploy to Kubernetes' 
 description: 'Deploys a ghcr image to a Kubernetes Cluster'
 inputs:
   github_username:
