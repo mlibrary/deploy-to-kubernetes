@@ -19,6 +19,9 @@ inputs:
   deployment:
     required: true
     default: 'web'
+  container:
+    required: true
+    default: 'web'
 
 runs:
   using: "composite"
@@ -44,4 +47,4 @@ runs:
         kubectl config use-context default
     - name: Deploy
       shell: bash
-      run: kubectl set image deployment ${{ inputs.deployment }} ${{ inputs.deployment }}=ghcr.io/${{ inputs.image }}
+      run: kubectl set image deployment ${{ inputs.deployment }} ${{ inputs.container }}=ghcr.io/${{ inputs.image }}
