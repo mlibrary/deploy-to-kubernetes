@@ -14,4 +14,5 @@ To use this action:
         namespace_token: YOUR_BASE64_ENCODED_TOKEN_FOR_DEPLOYING_TO_YOUR_NAMESPACE
         namespace: NAMESPACE_YOUR_ARE_DEPLOYING_TO
         deployment: YOUR_DEPLOYMENT_NAME #default is 'web'
+        container: YOUR_CONTAINER_NAME #default is 'web'
 ```
