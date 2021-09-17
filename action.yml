@@ -3,19 +3,25 @@ description: 'Deploys a ghcr image to a Kubernetes Cluster'
 inputs:
   github_username:
     required: true
+    default: ${{ github.actor }}
   github_token:
     required: true
+    default: ${{ secrets.GITHUB_TOKEN }}
   image:
     required: true
     description: organization/image_name
   cluster_ca:
     required: true
+    default: ${{ secrets.KUBERNETES_CA }}
   cluster_server:
     require: true
+    default: ${{ secrets.KUBERNETES_SERVER }}
   namespace_token:
     required: true
+    default: ${{ secrets.KUBERNETES_TOKEN }}
   namespace:
     required: true
+    default: ${{ secrets.NAMESPACE }}
   deployment:
     required: true
     default: 'web'
