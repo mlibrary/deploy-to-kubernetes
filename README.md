@@ -8,6 +8,12 @@ To use this action:
       uses: mlibrary/deploy-to-kubernetes@v1
       with:
         image: myorganization/my_app:latest
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        cluster_server: my-kubernetes-server
+        cluster_ca: ${{ secrets.KUBERNETES_CA }}
+        namespace_token: ${{ secrets.NAMESPACE_CA }}
+        namespace: my-app-namespace
+       
 ```
 
 ## Required Arguments
