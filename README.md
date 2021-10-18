@@ -2,7 +2,7 @@
 Action for deploying a ghcr image to a kuberenetes cluster
 
 ## Example
-To use this action:
+To use this action to deploy a deployment image:
 ```
    - name: Deploy to NAMESPACE
       uses: mlibrary/deploy-to-kubernetes@v1
@@ -13,6 +13,22 @@ To use this action:
         cluster_ca: ${{ secrets.KUBERNETES_CA }}
         namespace_token: ${{ secrets.NAMESPACE_CA }}
         namespace: my-app-namespace
+       
+```
+
+To use this action to deploy a cronjob image
+```
+   - name: Deploy to NAMESPACE
+      uses: mlibrary/deploy-to-kubernetes@v1
+      with:
+        image: myorganization/my_app:latest
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        cluster_server: my-kubernetes-server
+        cluster_ca: ${{ secrets.KUBERNETES_CA }}
+        namespace_token: ${{ secrets.NAMESPACE_CA }}
+        namespace: my-app-namespace
+        type: cronjob
+        cronjob_name: my-cronjob-name
        
 ```
 
@@ -70,3 +86,10 @@ The container in the deployment whose image to set. Defaults to `web`.
 The username to use to log in to GCHR. Defaults to `${{ github.actor }}`. In
 most cases you should not need to change this.
 
+### `type`
+
+The options are here are 'deployment' or 'cronjob'. Specfy 'cronjob' if a cronjob's image should be updated. Defaults to 'deployment'
+
+### `cronjob_name`
+
+Only needed if `type` is 'cronjob'. This is the name of the cronjob to which the new image should be applied.
