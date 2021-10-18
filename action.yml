@@ -26,7 +26,7 @@ inputs:
   type:
     required: true
     default: 'deployment'
-    description: 'deployment' or 'cronjob'
+    description: "'deployment' or 'cronjob'"
   cronjob_name:
 
 runs:
