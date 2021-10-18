@@ -54,9 +54,13 @@ runs:
     - name: Deploy
       if: ${{ inputs.type }} == 'deployment'
       shell: bash
-      run: kubectl set image deployment ${{ inputs.deployment }} ${{ inputs.container }}=ghcr.io/${{ inputs.image }}
-    - name: Update Cronjob
-      if: ${{ inputs.type }} == 'cronjob'
-      shell: bash
-      run: kubectl patch cronjob ${{ inputs.cronjob_name }} --type=json -p='[{"op":"replace", "path": "/spec/jobTemplate/spec/template/spec/containers/0/image", "value":"ghcr.io/${{ inputs.image }}"}]'
-
+      run: |
+        if echo ${{ inputs.type }} | grep -c "deployment"
+        then
+          kubectl set image deployment ${{ inputs.deployment }} ${{ inputs.container }}=ghcr.io/${{ inputs.image }}
+        elif echo ${{ inputs.type }} | grep -c "cronjob"
+        then
+          kubectl patch cronjob ${{ inputs.cronjob_name }} --type=json -p='[{"op":"replace", "path": "/spec/jobTemplate/spec/template/spec/containers/0/image", "value":"ghcr.io/${{ inputs.image }}"}]'
+        else
+          echo "type must be deployment or cronjob"
+        fi
