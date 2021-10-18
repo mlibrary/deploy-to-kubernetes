@@ -28,6 +28,7 @@ inputs:
     default: 'deployment'
     description: "'deployment' or 'cronjob'"
   cronjob_name:
+    required: false
 
 runs:
   using: "composite"
@@ -52,7 +53,6 @@ runs:
         kubectl config set-context default --cluster=cluster --user=default --namespace=${{ inputs.namespace }}
         kubectl config use-context default
     - name: Deploy
-      if: ${{ inputs.type }} == 'deployment'
       shell: bash
       run: |
         if echo ${{ inputs.type }} | grep -c "deployment"
