@@ -7,8 +7,8 @@ To use this action to deploy a deployment image:
    - name: Deploy to NAMESPACE
       uses: mlibrary/deploy-to-kubernetes@v1
       with:
-        image: myorganization/my_app:latest
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        image: ghcr.io/myorganization/my_app:latest
+        registry_token: ${{ secrets.GITHUB_TOKEN }}
         cluster_server: my-kubernetes-server
         cluster_ca: ${{ secrets.KUBERNETES_CA }}
         namespace_token: ${{ secrets.NAMESPACE_CA }}
@@ -21,8 +21,8 @@ To use this action to deploy a cronjob image
    - name: Deploy to NAMESPACE
       uses: mlibrary/deploy-to-kubernetes@v1
       with:
-        image: myorganization/my_app:latest
-        github_token: ${{ secrets.GITHUB_TOKEN }}
+        image: ghcr.io/myorganization/my_app:latest
+        registry_token: ${{ secrets.GITHUB_TOKEN }}
         cluster_server: my-kubernetes-server
         cluster_ca: ${{ secrets.KUBERNETES_CA }}
         namespace_token: ${{ secrets.NAMESPACE_CA }}
@@ -36,13 +36,11 @@ To use this action to deploy a cronjob image
 
 ### `image`
 
-The image to deploy. `ghcr.io/` is prepended, so if you provide e.g.
-`myorganization/my_app:latest`, the actual image that will be used is
-`ghcr.io/myorganization/my_app:latest`.
+The image to deploy, e.g.  `ghcr.io/myorganization/my_app:v1.2.3`.
 
-### `github_token`
+### `registry_token`
 
-The PAT to use to log in to GHCR. This shold be `${{ secrets.GITHUB_TOKEN }}`. 
+The token to use to log in to the registry. For GHCR this shold be `${{ secrets.GITHUB_TOKEN }}`. 
 
 ### `cluster_server`
 
@@ -81,10 +79,14 @@ The deployment whose image to set. Defaults to `web`.
 
 The container in the deployment whose image to set. Defaults to `web`.
 
-### `github_username`
+### `registry_username`
 
-The username to use to log in to GCHR. Defaults to `${{ github.actor }}`. In
-most cases you should not need to change this.
+The username to use to log in to the registry. Defaults to `${{ github.actor
+}}`. For GHCR you should not need to change this.
+
+### `registry`
+
+The registry to log in to.
 
 ### `type`
 
