@@ -1,66 +1,105 @@
-name: 'MLibrary Deploy to Kubernetes Cluster' 
-description: 'Deploys a ghcr image to a Kubernetes Cluster'
+---
+name: 'MLibrary Deploy to Kubernetes Cluster'
+description: 'Deploys an image to a Kubernetes Cluster'
 inputs:
-  github_username:
-    required: true
+  registry:
+    description: Registry to log into
+    default: ghcr.io
+  registry_username:
+    description: Username to log into the registry with
     default: ${{ github.actor }}
-  github_token:
+  registry_token:
+    decription: Token to log into the registry with
     required: true
   image:
+    description: Image to deploy, e.g. registry/organization/image_name:tag
     required: true
-    description: organization/image_name
   cluster_ca:
+    description: The Kubernetes cluster CA certificate, base64-encoded
     required: true
   cluster_server:
-    require: true
+    description: The Kubernetes server API endpoint
+    required: true
   namespace_token:
+    description: A base64-encoded Kubernetes service account token
     required: true
   namespace:
+    description: The Kubernetes namespace to deploy to
     required: true
+  type:
+    description: "'deployment' or 'cronjob'"
+    default: 'deployment'
   deployment:
-    required: true
+    description: >-
+      Used when type=deployment. The deployment whose image to set.
     default: 'web'
   container:
-    required: true
+    description: >-
+      Used when type=deployment. The container in the deployment whose image to
+      set.
     default: 'web'
-  type:
-    required: true
-    default: 'deployment'
-    description: "'deployment' or 'cronjob'"
   cronjob_name:
+    description: >-
+      Used when type=cronjob. The cronjob whose image to set; only updates the
+      first container for the cronjob
     required: false
 
 runs:
   using: "composite"
   steps:
-    - name: Log into Github Container Registry
+    - name: Log into container registry
       uses: docker/login-action@v1
       with:
-        registry: ghcr.io
-        username: ${{ inputs.github_username }}
-        password: ${{ inputs.github_token }}
-    - name: Check that the tag exists
-      run: docker manifest inspect ghcr.io/${{ inputs.image }} > /dev/null
+        registry: ${{ inputs.registry }}
+        username: ${{ inputs.registry_username }}
+        password: ${{ inputs.registry_token }}
+    - name: Check that the image & tag exist
+      run: docker manifest inspect "$IMAGE" > /dev/null
       shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
     - uses: azure/setup-kubectl@v1
     - name: Authenticate with kubernetes
       shell: bash
       run: |
         mkdir -p ${HOME}/.kube/certs/cluster
         echo ${{ inputs.cluster_ca }} | base64 -d > ${HOME}/.kube/certs/cluster/k8s-ca.crt
-        kubectl config set-cluster cluster --certificate-authority=${HOME}/.kube/certs/cluster/k8s-ca.crt --server=${{ inputs.cluster_server }}
-        kubectl config set-credentials default --token=`echo ${{ inputs.namespace_token }} | base64 -d`
-        kubectl config set-context default --cluster=cluster --user=default --namespace=${{ inputs.namespace }}
+        kubectl config set-cluster cluster --certificate-authority=${HOME}/.kube/certs/cluster/k8s-ca.crt --server="$CLUSTER_SERVER"
+        kubectl config set-credentials default --token=$(echo "$NAMESPACE_TOKEN" | base64 -d)
+        kubectl config set-context default --cluster=cluster --user=default --namespace="$NAMESPACE"
         kubectl config use-context default
+      env:
+        CLUSTER_CA: ${{ inputs.cluster_ca }}
+        CLUSTER_SERVER: ${{ inputs.cluster_server }}
+        NAMESPACE_TOKEN: ${{ inputs.namespace_token }}
+        NAMESPACE: ${{ inputs.namespace }}
     - name: Deploy
       shell: bash
       run: |
-        if echo ${{ inputs.type }} | grep -c "deployment"
-        then
-          kubectl set image deployment ${{ inputs.deployment }} ${{ inputs.container }}=ghcr.io/${{ inputs.image }}
-        elif echo ${{ inputs.type }} | grep -c "cronjob"
-        then
-          kubectl patch cronjob ${{ inputs.cronjob_name }} --type=json -p='[{"op":"replace", "path": "/spec/jobTemplate/spec/template/spec/containers/0/image", "value":"ghcr.io/${{ inputs.image }}"}]'
-        else
-          echo "type must be deployment or cronjob"
-        fi
+        case "$TYPE" in
+          deployment)
+            kubectl set image deployment "$DEPLOYMENT" "$CONTAINER"="$IMAGE"
+            ;;
+          cronjob)
+            json=$(cat <<EOT
+            [
+              {
+                "op": "replace",
+                "path": "/spec/jobTemplate/spec/template/spec/containers/0/image",
+                "value": "$IMAGE"
+              }
+            ]
+        EOT
+            )
+            kubectl patch cronjob "$CRONJOB_NAME" --type=json -p="$json"
+            ;;
+          *)
+            echo "type must be deployment or cronjob"
+            exit 1;
+        esac
+      env:
+        TYPE: ${{ inputs.type }}
+        DEPLOYMENT: ${{ inputs.deployment }}
+        CRONJOB_NAME: ${{ inputs.cronjob_name }}
+        CONTAINER: ${{ inputs.container }}
+        IMAGE: ${{ inputs.image }}
