@@ -5,7 +5,7 @@ Action for deploying a ghcr image to a kuberenetes cluster
 To use this action to deploy a deployment image:
 ```
    - name: Deploy to NAMESPACE
-      uses: mlibrary/deploy-to-kubernetes@v1
+      uses: mlibrary/deploy-to-kubernetes@v2
       with:
         image: ghcr.io/myorganization/my_app:latest
         registry_token: ${{ secrets.GITHUB_TOKEN }}
@@ -19,7 +19,7 @@ To use this action to deploy a deployment image:
 To use this action to deploy a cronjob image
 ```
    - name: Deploy to NAMESPACE
-      uses: mlibrary/deploy-to-kubernetes@v1
+      uses: mlibrary/deploy-to-kubernetes@v2
       with:
         image: ghcr.io/myorganization/my_app:latest
         registry_token: ${{ secrets.GITHUB_TOKEN }}
